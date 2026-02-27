@@ -5,7 +5,8 @@ Im Projekt **openLunaris** wurde ein Chat-first Web-Interface entwickelt, das me
 
 Die Modell-Anbindung und Kostenkontrolle erfolgen über **LiteLLM** als OpenAI-kompatibles Gateway, das Anfragen an **OpenRouter** weiterleitet (mehrere Modelle über eine einheitliche API) und dabei Logging/Caching unterstützt.
 
-![[Pasted image 20260227091039.png]]
+<img width="1295" height="1234" alt="grafik" src="https://github.com/user-attachments/assets/359976d0-fc2a-4428-bc5a-7d1dbd0fbc17" />
+
 
 This repo contains Step 1 infra for:
 - LiteLLM proxy (`http://localhost:4000`)
@@ -78,7 +79,8 @@ Ziel war daher ein zentraler LLM-Hub, der (a) einfache Nutzung ermöglicht, (b) 
 - **Persistenz / Infrastruktur**: Redis (Caching), Postgres (Keys/Logs), Docker Compose.
 - **Optionaler Orchestrator**: n8n für externe Aktionen (Slack/Teams/etc.).
 
-![[Pasted image 20260227091154.png]]
+<img width="2541" height="1230" alt="grafik" src="https://github.com/user-attachments/assets/c20187a8-f0d3-4be1-a16f-11e35c256c23" />
+
 ### 4.2 Datenfluss (ohne n8n)
 UI → LiteLLM (OpenAI-API) → OpenRouter → Modell → Antwort → UI
 
@@ -109,7 +111,7 @@ Ein Skill definiert **Rolle + Aufgabe + Output-Format + Regeln**, z. B.:
 
 Damit wird die Identität/Absicht des Modells wesentlich stabiler als bei freien Prompts.
 
-![[Pasted image 20260227091301.png]]
+<img width="1106" height="1231" alt="grafik" src="https://github.com/user-attachments/assets/3e535ce7-2874-4e3f-b59a-b9c55e1d5dd5" />
 
 ### 5.3 Skill Protocol v2: Slot-basiertes “Ask-Once”
 Um Token-Ping-Pong zu vermeiden, wurde ein zweiphasiger Ablauf umgesetzt:
