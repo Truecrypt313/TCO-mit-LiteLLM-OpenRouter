@@ -1,6 +1,6 @@
-# Projektbericht: openLunaris – Skill-basierter LLM Hub mit Kosten-/Routing-Kontrolle und optionaler Automatisierung
+# openLunaris - Skill-basierter LLM Hub mit Kosten-/Routing-Kontrolle und optionaler Automatisierung
 
-## 1. Kurzüberblick
+### 1. Kurzüberblick
 Im Projekt **openLunaris** wurde ein Chat-first Web-Interface entwickelt, das mehrere große Sprachmodelle über eine einheitliche Schnittstelle bündelt und dabei gezielt Kosten reduziert. Nutzer wählen je nach Aufgabe ein Profil (Cheap/Fast/Best/Auto) und optional einen “Skill” (z. B. E-Mail, Lead-Anfrage, Ticket), wodurch das Modell kontextstabil und strukturiert antwortet. Als Ausführungs-/Integrationsschicht kann **n8n** angebunden werden, um Ergebnisse automatisiert in Systeme wie **Slack** oder **Microsoft Teams** zu posten.
 
 Die Modell-Anbindung und Kostenkontrolle erfolgen über **LiteLLM** als OpenAI-kompatibles Gateway, das Anfragen an **OpenRouter** weiterleitet (mehrere Modelle über eine einheitliche API) und dabei Logging/Caching unterstützt.
