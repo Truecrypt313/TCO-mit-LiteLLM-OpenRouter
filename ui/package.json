@@ -1,0 +1,12 @@
+{
+  "name": "toc-mvp-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal UI for n8n + LiteLLM MVP",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

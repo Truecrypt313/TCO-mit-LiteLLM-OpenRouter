@@ -1,0 +1,62 @@
+model_list:
+  - model_name: or-fast
+    litellm_params:
+      model: openrouter/openai/gpt-4o-mini
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-strong
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-sonnet
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-ultracheap
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.1-8b-instruct
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-cheap-gemma-2-9b
+    litellm_params:
+      model: openrouter/google/gemma-2-9b-it
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-cheap-mistral-7b
+    litellm_params:
+      model: openrouter/mistralai/mistral-7b-instruct
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-cheap-phi-4
+    litellm_params:
+      model: openrouter/microsoft/phi-4
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-cheap-qwen-2-5-7b
+    litellm_params:
+      model: openrouter/qwen/qwen-2.5-7b-instruct
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-fast-claude-3-5-haiku
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-haiku
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-fast-qwen-3-32b
+    litellm_params:
+      model: openrouter/qwen/qwen3-32b
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-fast-qwen-2-5-coder-32b
+    litellm_params:
+      model: openrouter/qwen/qwen-2.5-coder-32b-instruct
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-best-gpt-4o
+    litellm_params:
+      model: openrouter/openai/gpt-4o
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-best-mistral-large-2512
+    litellm_params:
+      model: openrouter/mistralai/mistral-large-2512
+      api_key: os.environ/OPENROUTER_API_KEY
+  - model_name: or-best-deepseek-r1
+    litellm_params:
+      model: openrouter/deepseek/deepseek-r1
+      api_key: os.environ/OPENROUTER_API_KEY
+
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: redis
+    port: 6379
+    namespace: demo
+    ttl: 600

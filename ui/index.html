@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>openLunaris</title>
+    <link rel="icon" href="/favicon.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a href="#" id="brand-home" class="brand brand-link flex items-center gap-2-5" aria-label="Neuer Chat">
+          <img
+            src="./src/assets/brand/openlunaris-mark.png"
+            alt="openLunaris logo"
+            class="brand-logo object-contain shrink-0 w-auto"
+            decoding="async"
+            fetchpriority="high"
+          />
+          <div class="brand-copy">
+            <h1>openLunaris</h1>
+            <p>AI Chat • Skills • Routing</p>
+          </div>
+        </a>
+
+        <div class="top-actions">
+          <div class="profiles" id="profile-control">
+            <div class="profile-item" data-profile="cheap">
+              <button type="button" class="profile-trigger" data-profile="cheap">
+                <span>Cheap</span>
+                <small id="profile-label-cheap"></small>
+              </button>
+              <div class="profile-menu" id="profile-menu-cheap"></div>
+            </div>
+
+            <div class="profile-item" data-profile="fast">
+              <button type="button" class="profile-trigger" data-profile="fast">
+                <span>Fast</span>
+                <small id="profile-label-fast"></small>
+              </button>
+              <div class="profile-menu" id="profile-menu-fast"></div>
+            </div>
+
+            <div class="profile-item" data-profile="best">
+              <button type="button" class="profile-trigger" data-profile="best">
+                <span>Best</span>
+                <small id="profile-label-best"></small>
+              </button>
+              <div class="profile-menu" id="profile-menu-best"></div>
+            </div>
+
+            <div class="profile-item" data-profile="auto">
+              <button type="button" class="profile-trigger" data-profile="auto">
+                <span>Auto</span>
+                <small id="profile-label-auto">Dynamisch</small>
+              </button>
+            </div>
+          </div>
+
+          <button id="theme-toggle" class="icon-btn" title="Theme umschalten" aria-label="Theme umschalten">◐</button>
+
+          <div class="menu-wrap">
+            <button id="menu-toggle" class="icon-btn" title="Menü" aria-label="Menü">⋯</button>
+            <div id="menu-panel" class="menu-panel hidden">
+              <label for="webhook-url">Webhook URL</label>
+              <input id="webhook-url" type="url" value="http://localhost:5678/webhook/litellm-webhook" />
+              <button type="button" id="clear-chat" class="danger ghost">Chat leeren</button>
+              <button type="button" id="clear-skill" class="ghost">Skill leeren</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="chat-layout">
+        <section id="chat-history" class="chat-history"></section>
+
+        <section class="composer-wrap">
+          <div id="skill-hint" class="skill-hint hidden"></div>
+          <div id="active-chips" class="active-chips"></div>
+          <div class="composer-row">
+            <button id="open-skills" type="button" class="icon-btn plus-btn" aria-label="Skills öffnen">+</button>
+            <textarea
+              id="chat-input"
+              rows="1"
+              placeholder="Nachricht eingeben... (Enter = Senden, Shift+Enter = Zeilenumbruch)"
+            ></textarea>
+            <button id="send-btn" type="button" class="primary">Senden</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="skill-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Skills">
+      <div class="modal-card modal-card-skill">
+        <div class="modal-head">
+          <h2>Skills</h2>
+          <button id="close-modal" type="button" class="icon-btn" aria-label="Schließen">✕</button>
+        </div>
+
+        <section id="skill-picker-view" class="tab-pane active">
+          <input id="skill-search" type="text" placeholder="Skills suchen..." />
+          <div id="skill-categories" class="chip-row category-row"></div>
+          <div id="skill-list" class="template-list skill-list"></div>
+          <div class="picker-subactions">
+            <button type="button" id="manage-skills-link" class="ghost subtle hidden">Skills verwalten</button>
+            <button type="button" id="import-skills-picker" class="ghost subtle">Skill-Pack importieren</button>
+          </div>
+        </section>
+
+        <section id="skill-manage-view" class="tab-pane">
+          <div class="manage-head-row">
+            <button type="button" id="back-to-picker" class="ghost subtle">← Zurück zur Auswahl</button>
+          </div>
+          <div class="manage-layout">
+            <aside class="manage-side">
+              <input id="manage-search" type="text" placeholder="Skills suchen..." />
+              <div class="manage-filters">
+                <select id="manage-category-filter"></select>
+                <select id="manage-output-filter">
+                  <option value="all">Alle Output-Modi</option>
+                  <option value="text">text</option>
+                  <option value="email">email</option>
+                  <option value="ticket">ticket</option>
+                  <option value="json">json</option>
+                </select>
+              </div>
+              <div id="manage-list" class="template-list"></div>
+              <div class="actions two-col">
+                <button type="button" id="new-skill" class="ghost">Neu</button>
+                <button type="button" id="duplicate-skill" class="ghost">Duplizieren</button>
+                <button type="button" id="delete-skill" class="danger">Löschen</button>
+                <button type="button" id="reset-builtins" class="ghost">Built-ins reset</button>
+                <button type="button" id="export-skills" class="ghost">Export JSON</button>
+                <button type="button" id="import-skills" class="ghost">Import JSON</button>
+              </div>
+              <input id="import-file" type="file" accept="application/json" hidden />
+            </aside>
+
+            <section class="manage-editor">
+              <form id="skill-form">
+                <input id="skill-id" type="hidden" />
+                <input id="skill-is-builtin" type="hidden" />
+
+                <label for="skill-name">Name</label>
+                <input id="skill-name" type="text" required />
+
+                <label for="skill-description">Beschreibung</label>
+                <input id="skill-description" type="text" required />
+
+                <label for="skill-category">Kategorie</label>
+                <input id="skill-category" type="text" required />
+
+                <div class="split-fields">
+                  <div>
+                    <label for="skill-output-mode">Output Mode</label>
+                    <select id="skill-output-mode">
+                      <option value="text">text</option>
+                      <option value="email">email</option>
+                      <option value="ticket">ticket</option>
+                      <option value="json">json</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="skill-preferred-tier">Preferred Tier</label>
+                    <select id="skill-preferred-tier">
+                      <option value="cheap">cheap</option>
+                      <option value="fast">fast</option>
+                      <option value="best">best</option>
+                      <option value="auto">auto</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label for="skill-system-prompt">System Prompt</label>
+                <textarea id="skill-system-prompt" rows="10" required></textarea>
+
+                <label for="skill-rules">Rules (eine Regel pro Zeile, optional)</label>
+                <textarea id="skill-rules" rows="6"></textarea>
+
+                <div class="split-fields">
+                  <div>
+                    <label for="skill-use-slot-protocol">Slot Protocol v2</label>
+                    <select id="skill-use-slot-protocol">
+                      <option value="auto">Auto (aus Slots ableiten)</option>
+                      <option value="true">An</option>
+                      <option value="false">Aus</option>
+                    </select>
+                  </div>
+                  <div class="editor-inline-actions">
+                    <label for="validate-skill-slots">Slots JSON pruefen</label>
+                    <button type="button" id="validate-skill-slots" class="ghost">Validate</button>
+                  </div>
+                </div>
+
+                <label for="skill-slots-json">Slots JSON (optional)</label>
+                <textarea id="skill-slots-json" rows="8" placeholder='[{"key":"recipient","label":"Empfaenger","required":true}]'></textarea>
+                <p class="muted">Erwartet ein JSON-Array mit Slot-Objekten: key, label, required, type, example, hint.</p>
+
+                <label for="skill-deliver-skeleton">Deliver Skeleton (optional)</label>
+                <textarea id="skill-deliver-skeleton" rows="8"></textarea>
+
+                <button type="submit" class="primary">Speichern</button>
+              </form>
+            </section>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/app-config.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

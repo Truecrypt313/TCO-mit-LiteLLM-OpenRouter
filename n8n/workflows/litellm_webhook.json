@@ -1,0 +1,145 @@
+{
+  "name": "LiteLLM Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "litellm-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        300
+      ],
+      "webhookId": "litellm-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json.body ?? $json;\nconst requestedModel = (input.model ?? 'or-fast').toString();\nconst skillId = input.skillId == null ? null : input.skillId.toString();\nconst outputMode = ['text', 'email', 'ticket', 'json'].includes((input.outputMode ?? '').toString())\n  ? input.outputMode.toString()\n  : 'text';\n\nconst allowedModels = [\n  'or-fast',\n  'or-strong',\n  'or-ultracheap',\n  'or-cheap-gemma-2-9b',\n  'or-cheap-mistral-7b',\n  'or-cheap-phi-4',\n  'or-cheap-qwen-2-5-7b',\n  'or-fast-claude-3-5-haiku',\n  'or-fast-qwen-3-32b',\n  'or-fast-qwen-2-5-coder-32b',\n  'or-best-gpt-4o',\n  'or-best-mistral-large-2512',\n  'or-best-deepseek-r1'\n];\n\nif (!allowedModels.includes(requestedModel)) {\n  throw new Error(`Invalid model alias: ${requestedModel}`);\n}\n\nconst incomingMessages = Array.isArray(input.messages)\n  ? input.messages\n      .map((msg) => ({\n        role: (msg?.role ?? '').toString().trim(),\n        content: (msg?.content ?? '').toString()\n      }))\n      .filter((msg) => ['system', 'user', 'assistant'].includes(msg.role) && msg.content.trim())\n  : [];\n\nlet messages = incomingMessages;\n\nif (!messages.length) {\n  const text = (input.text ?? '').toString().trim();\n  if (!text) {\n    throw new Error('Missing required field: messages or text');\n  }\n  messages = [{ role: 'user', content: text }];\n}\n\nreturn [{\n  json: {\n    skillId,\n    model: requestedModel,\n    outputMode,\n    body: {\n      model: requestedModel,\n      messages,\n      max_tokens: 400\n    }\n  }\n}];"
+      },
+      "id": "build_openai_body",
+      "name": "Build OpenAI Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://litellm:4000/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.LITELLM_MASTER_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json.body}}",
+        "options": {}
+      },
+      "id": "call_litellm",
+      "name": "Call LiteLLM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $json.choices?.[0]?.message;\nlet content = msg?.content;\n\nif (Array.isArray(content)) {\n  const textParts = content\n    .map((part) => {\n      if (typeof part === 'string') return part;\n      if (part && typeof part.text === 'string') return part.text;\n      return '';\n    })\n    .filter(Boolean);\n  content = textParts.join('\\n').trim();\n}\n\nif (typeof content !== 'string' || !content.trim()) {\n  const fallback = $json.choices?.[0]?.text;\n  if (typeof fallback === 'string' && fallback.trim()) {\n    content = fallback.trim();\n  }\n}\n\nif (typeof content !== 'string' || !content.trim()) {\n  throw new Error('LiteLLM returned an empty response content');\n}\n\nreturn [{ json: { content: content.trim() } }];"
+      },
+      "id": "extract_text",
+      "name": "Extract Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{$json.content}}",
+        "options": {}
+      },
+      "id": "respond_webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1300,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build OpenAI Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build OpenAI Body": {
+      "main": [
+        [
+          {
+            "node": "Call LiteLLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call LiteLLM": {
+      "main": [
+        [
+          {
+            "node": "Extract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1"
+}
